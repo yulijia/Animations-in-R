@@ -1,0 +1,762 @@
+---
+pagetitle: "Animations in R"
+author: "Lijia Yu"
+date: "2023/09/22"
+host: "USYD coding club"
+institute: "University of Sydney"
+strip-comments: true
+format: 
+  revealjs:
+    logo: images/usydlogo-white.svg
+    slide-number: true
+    multiplex: true
+    theme: assets/sydney.scss
+    controls: true
+    incremental: true
+    auto-stretch: false
+    chalkboard: 
+      boardmarker-width: 5
+    include-after: |
+      <link rel="stylesheet" href="assets/syntax-highlight.css"> 
+callout-icon: false
+execute:
+  echo: true
+---
+
+
+
+```{r setup, echo = FALSE, cache = FALSE, results = 'hide'}
+library(knitr)
+options(
+  htmltools.dir.version = FALSE, tibble.width = 60, tibble.print_min = 6,
+  crayon.enabled = TRUE
+)
+opts_chunk$set(
+  echo = FALSE, warning = FALSE, message = FALSE, comment = "#>",
+  fig.path = 'images/', fig.align = 'center',
+  cache = T, cache.path = 'cache/'
+)
+```
+
+
+## {#title-slide background="./images/zoetrope-1.gif"}
+
+
+
+<h1>`r rmarkdown::metadata$pagetitle`</h1>
+
+`r rmarkdown::metadata$author` 
+
+ 
+<br><br>
+
+
+`r rmarkdown::metadata$date`
+<br>
+`r rmarkdown::metadata$host`
+ 
+
+
+## 
+
+
+:::: {.columns style='display: flex !important; height: 90%;'}
+
+
+
+::: {.column width="50%" style='display: flex; justify-content: center; align-items: center;'}
+
+`r fontawesome::fa('lightbulb',height='30px',fill='steelblue')` A good animated GIF of statistical figures can capture the audience's interest and leave a lasting impression.
+
+
+:::
+
+::: {.column width="50%"}
+
+```{r gapminder, echo=F,fig.height=8,fig.width=6}
+suppressPackageStartupMessages({
+  library(gganimate)
+  library(gapminder)
+  library(tidyverse)  
+})
+
+gapminder %>%  
+  select(country, pop, year, continent) %>%  
+  # for each year we assign a rank
+  group_by(year) %>%  
+  arrange(year, -pop) %>%  
+  # assign ranking
+  mutate(rank = 1:n(),
+         Value_lbl = paste0(" ",round(pop/1000000))) %>%  
+  filter(rank <= 10) ->  
+  ranked_by_year
+
+staticplot = ggplot(ranked_by_year, aes(rank, group = country, 
+                                              fill = as.factor(country), color = as.factor(country))) +
+  geom_tile(aes(y =  pop/2,
+                height = pop,
+                width = 0.9), alpha = 0.8, color = NA) +
+  geom_text(aes(y = 0, label = paste(country, " ")), vjust = 0.2, hjust = 1) +
+  geom_text(aes(y=pop,label = Value_lbl, hjust=0)) +
+  coord_flip(clip = "off", expand = FALSE) +
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_reverse() +
+  guides(color = "none", fill = "none") + 
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position="none",
+        panel.background=element_blank(),
+        panel.border=element_blank(),
+        panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        panel.grid.major.x = element_line( size=.1, color="black" ),
+        panel.grid.minor.x = element_line( size=.1, color="black" ),
+        plot.title=element_text(size=25, hjust=0.5, face="bold", colour="black"),
+        plot.subtitle=element_text(size=20, hjust=0.5, face="italic", color="black"),
+        plot.caption =element_text(size=12, hjust=0.5, face="italic", color="black"),
+        plot.background=element_blank(),
+        plot.margin = margin(2,2, 2, 4, "cm"))
+
+
+anim = staticplot + transition_states(year, transition_length = 4, state_length = 1) +
+  view_follow(fixed_x = TRUE) +
+  labs(title = 'Population: {closest_state}',
+       subtitle  =  "Top 10 countries",
+       caption  = "Population（milion） | Data source: Gapminder data")
+
+anim
+```
+
+
+:::
+
+::::
+
+# How does animation work? {background-color="#FFB800"}
+
+
+##  
+
+:::: {.columns}
+
+::: {.column width="50%" .fragment fragment-index=1 .fade-in}
+::: {.fragment fragment-index=2 .semi-fade-out}
+### Optical illusion
+:::
+
+<br>
+
+::: {.fragment fragment-index=2 .fade-in}
+::: {.fragment fragment-index=3  .semi-fade-out}
+### Frame By Frame
+
+
+:::
+:::
+
+<br>
+
+::: {.fragment fragment-index=3 .fade-in}
+### Keyframe & Tweening
+:::
+
+:::
+
+::: {.column width="50%" .fragment fragment-index=1 .fade-in }
+::: { .r-stack}
+::: {.fragment fragment-index=2 .fade-out} 
+
+![](./images/zoumadeng.gif)
+<br>
+
+#### Persistence of vision works because the human eye and brain can  <span style="color:red;">only process 10 to 12 separate images per second </span>, retaining an image for up to a fifteenth of a second. If a subsequent image replaces it in this period of time it will create the illusion of continuity.
+
+
+::: {.notes}
+By presenting a sequence of still images in quick enough succession, the viewer interprets them as a continuous moving image.
+:::
+
+:::
+::: { .fragment fragment-index=2 .fade-in }
+
+::: {.fragment fragment-index=3 .fade-out} 
+
+ ![](./images/FrameByFrame.jpg)
+
+ 
+#### Every single frame is drawn individually 
+
+#### Frames per second (FPS)，FPS > 10
+
+#### The truth is not always at 24fps! (The history of 24fps is all about sound)
+
+
+::: {.notes}
+
+https://www.quora.com/What-is-the-origin-of-24-fps
+
+The history of 24fps is all about sound.
+
+Silent films were recorded at speeds all over the place, but the most common framerate was 16fps. That's why so many older films look "fast" today - because they're played on projectors and systems geared to 24fps. So it's a 16fps recording played at 24fps.
+
+Then came the Vitaphone process. Vitaphone was a method of mechanically linking playback of a record and a film reel resulting in synchronized sound for picture. This wass the method used for "The Jazz Singer," which single-handedly ushered in "talkie" movies. Once that dam burst, everyone had to have a Vitaphone system.
+
+And in the Vitaphone system, a 16-inch record played at 33 1/3 rpm matched the 11 minute playing time of film projected at... 24fps.
+
+And the rest was marketing pressure from the studios to the directors instructing them to crank at 24fps for Vitaphone delivery!
+:::
+
+:::
+
+:::
+
+
+::: { .fragment fragment-index=3 .fade-in }
+ ![](./images/KeyFrame.jpg)
+ 
+#### Tweening is the process of automatically generating frames between two manually drawn frames (called keyframes).
+
+:::
+:::
+:::
+
+
+::: aside  
+::: { .fragment fragment-index=2 .fade-in }
+::: { .fragment fragment-index=3 .fade-out}
+Image Source: [Persistence of vision: how does animation work?](https://www.futurelearn.com/info/courses/explore-animation/0/steps/12222)
+:::
+:::
+::: { .fragment fragment-index=3 .fade-in}
+Image Source: [cs184](https://cs184.eecs.berkeley.edu/sp19/lecture/17-28/intro-to-animation-kinematics-mo)
+:::
+:::
+
+
+::::
+
+
+## Animating Your Data Visualizations 
+
+
+::: {layout="[[-1], [1], [-1]]"}
+![](./images/flowchart_of_animation.png){fig-align="center"}
+:::
+
+
+::: aside
+Image Source: [Animating Your Data Visualizations Like a Boss Using R](https://towardsdatascience.com/animating-your-data-visualizations-like-a-boss-using-r-f94ae20843e3)
+:::
+
+
+# Create Animations in R {background-color="#0148A4"}
+
+## Overview
+
+- #### Library
+  - `ImageMagick` (`GraphicsMagick`): Displaying, creating, converting, modifying, and editing raster images
+  - `Gifski`: Highest-quality GIF encoder
+  - `FFmpeg`: A suite of libraries and programs for handling video, audio, and other multimedia files and streams.
+
+- #### R wrappers
+  - `magick`
+  - `gifski`
+  - `av`
+  
+- #### Create Animation
+  - `animation`
+  - `gganimate`
+  - `plotly`
+  
+  
+## magick
+
+:::: {.columns}
+
+::: {.column width="30%" .fragment fragment-index=1 .fade-in}
+::: {.fragment fragment-index=2 .semi-fade-out}
+### Read image
+:::
+
+<br>
+
+::: {.fragment fragment-index=2 .fade-in}
+::: {.fragment fragment-index=3  .semi-fade-out}
+### Make animation
+
+
+:::
+:::
+
+<br>
+
+::: {.fragment fragment-index=3 .fade-in}
+::: {.fragment fragment-index=4  .semi-fade-out}
+### Morph
+:::
+:::
+
+
+<br>
+
+::: {.fragment fragment-index=4 .fade-in}
+### Save gif
+:::
+
+:::
+
+::: {.column width="70%" .fragment fragment-index=1 .fade-in }
+::: { .r-stack}
+::: {.fragment fragment-index=2 .fade-out} 
+
+```{R magick-read, eval = T, echo=T}
+library(magick)
+bigdata <- image_read('./images/bigdata.jpg')
+frink <- image_read("./images/frink.png")
+logo <- image_read("./images/Rlogo.png")
+img <- c(bigdata, logo, frink)
+image_append(image_scale(img, "x200"))
+```
+
+:::
+
+::: { .fragment fragment-index=2 .fade-in }
+::: {.fragment fragment-index=3 .fade-out} 
+
+```{r magick-createaanimation, eval = T, echo=T}
+#| code-line-numbers: "6-8"
+library(magick)
+bigdata <- image_read('./images/bigdata.jpg')
+frink <- image_read("./images/frink.png")
+logo <- image_read("./images/Rlogo.png")
+img <- c(bigdata, logo, frink)
+image_animate(image_scale(img, "200x200"), 
+              fps = 1, 
+              dispose = "previous")
+```
+
+:::
+
+:::
+
+
+::: { .fragment fragment-index=3 .fade-in }
+::: {.fragment fragment-index=4 .fade-out} 
+
+```{r magick-morph, eval = T, echo=T}
+#| code-line-numbers: "5"
+newlogo <-  image_read("./images/Rlogo.png")
+oldlogo <- image_read("./images/Rlogo-old.png")
+image_resize(c(newlogo, oldlogo), '200x200!') %>%
+  image_background('white') %>%
+  image_morph() %>%
+  image_animate(optimize = TRUE) 
+```
+
+:::
+:::
+
+
+::: { .fragment fragment-index=4 .fade-in }
+
+```{r magick-save, eval = T, echo=T}
+#| code-line-numbers: "7"
+newlogo <-  image_read("./images/Rlogo.png")
+oldlogo <- image_read("./images/Rlogo-old.png")
+image_resize(c(newlogo, oldlogo), '200x200!') %>%
+  image_background('white') %>%
+  image_morph() %>%
+  image_animate(optimize = TRUE) %>%
+  image_write("./images/Rlogo.gif")
+```
+
+:::
+
+
+
+:::
+:::
+
+ 
+::::
+
+
+## gifski
+
+#### only includes two functions
+
+:::: {.columns}
+
+::: {.column width="50%" }
+
+```{r gifski, eval = F, echo=T}
+gifski(
+  png_files,
+  gif_file = "animation.gif",
+  width = 800,
+  height = 600,
+  delay = 1,
+  loop = TRUE,
+  progress = TRUE
+)
+```
+:::
+
+::: {.column width="50%"}
+
+```{r gifski-save, eval = F, echo=T}
+save_gif(
+  expr,
+  gif_file = "animation.gif",
+  width = 800,
+  height = 600,
+  delay = 1,
+  loop = TRUE,
+  progress = TRUE,
+  ...
+)
+```
+:::
+
+::::
+
+
+## animation
+
+#### A gallery of animations in statistics and utilities to create animations
+
+
+::: {.panel-tabset}
+
+### Brownian Motion
+
+```{r brownian_motion, out.width = "400px"}
+knitr::include_graphics("./images/brownian_motion.gif")
+```
+
+The location of the next step is current location + random Gaussian numbers, i.e.,
+
+$x_{k+1}=x_{k}+rnorm(1);$
+$y_{k+1}=y_{k}+rnorm(1)$
+where $(x,y)$ stands for the location of a point.
+
+
+
+### Least squares method
+
+```{r least_squares, out.width = "400px"}
+knitr::include_graphics("./images/least_squares.gif")
+```
+
+With either the intercept or the slope changing, the lines will be moving in the graph and corresponding residuals will be plotted. We can finally see the best estimate of the intercept and the slope from the residual plot.
+
+### K-means Cluster Algorithm
+
+```{r kmeans, out.width = "400px"}
+knitr::include_graphics("./images/kmeans.gif")
+```
+
+A demo of the k-Means cluster algorithm for data containing only two variables (columns). The k-Means cluster algorithm may be regarded as a series of iterations of: finding cluster centers, computing distances between sample points, and redefining cluster membership.
+
+:::
+
+
+
+## animation
+
+#### to create animations
+
+::: {.panel-tabset}
+
+### im.convert() and gm.convert()
+
+```{r imconvert, out.width = "400px", eval=F, echo=T}
+library(animation)
+## generate some images
+owd = setwd("~/Animations-in-R/USYD-coding-club-2023/tmp")
+ani.options(interval = 0.05, nmax = 20)
+png("bm%03d.png")
+brownian.motion(pch = 21, cex = 5, col = "red", bg = "yellow", 
+  main = "Demonstration of Brownian Motion")
+dev.off()
+
+## filenames with a wildcard *
+im.convert("bm*.png", output = "bm-animation1.gif",convert = "convert")
+## use GraphicsMagick
+gm.convert("bm*.png", output = "bm-animation2.gif")
+## or a filename vector
+bm.files = sprintf("bm%03d.png", 1:20)
+im.convert(files = bm.files, output = "bm-animation3.gif",convert = "convert")
+```
+ 
+
+### saveGIF()
+
+```{r saveGIF, out.width = "400px", eval=F, echo=T}
+library(animation)
+saveGIF({
+  brownian.motion(pch = 21, cex = 5, col = "red", bg = "yellow")
+}, movie.name = "brownian_motion.gif", interval = 0.1, nmax = 30, 
+  ani.width = 600)
+```
+ 
+
+### Others
+
+`saveHTML()`
+<br>
+`saveVideo()`
+<br>
+`saveLatex()`
+<br>
+`saveSWF()`
+
+
+:::
+
+
+## gganimate
+
+
+#### A Grammar of Animated Graphics
+
+
+* **Transitions**：Transitions are used to declare how plot data should be interpreted in terms of the animations dimension. 
+
+* **Views**：Views define how the ranges of the coordinate system changes during the animation.
+
+* **Shadows**：Shadows define how data assigned to other than the current frame is displayed in the frame.
+
+* **Tweening**：These functions allows control over how graphical elements change into, between, and out of states.
+
+* **Rendering**：These functions allows you to control the rendering of the animation specified using the functions above.
+
+
+
+## gganimate
+ 
+
+```{r gganimate, eval = F, echo=T}
+ggplot(gapminder, 
+       aes(gdpPercap, lifeExp, size = pop, color = country)) +
+  geom_point(alpha = 0.7, show.legend = FALSE) +
+  scale_color_manual(values = country_colors) +
+  scale_x_log10() +
+  scale_size(range = c(2, 12)) +
+  facet_wrap(~continent) +
+  labs(title = "Year:{frame_time}", 
+       x = "GDP per capita", 
+       y = "life expectancy") +
+  transition_time(year) +
+  ease_aes("linear")
+```
+
+## gganimate 
+
+```{r gganimate-gif, eval = T}
+ggplot(gapminder, aes(gdpPercap, lifeExp, size = pop, color = country)) +
+  geom_point(alpha = 0.7, show.legend = FALSE) +
+  scale_color_manual(values = country_colors) +
+  scale_x_log10() +
+  scale_size(range = c(2, 12)) +
+  facet_wrap(~continent) +
+  labs(title = "Year:{frame_time}", x = "GDP per capita", y = "life expectancy") +
+  transition_time(year) +
+  ease_aes("linear")
+```
+ 
+ 
+## Plotly
+
+ 
+```{r plotly, eval = F, echo=T}
+library(plotly)
+library(gapminder)
+df <- gapminder
+fig <- df %>%
+  plot_ly(
+    x = ~gdpPercap,
+    y = ~lifeExp,
+    size = ~pop,
+    color = ~continent,
+    frame = ~year,
+    text = ~country,
+    hoverinfo = "text",
+    type = 'scatter',
+    mode = 'markers'
+  ) %>% layout(
+    xaxis = list(
+      type = "log"
+    )
+  )
+fig
+```
+
+## Plotly
+ 
+
+```{r plotly-html, eval = T, echo=F}
+suppressPackageStartupMessages({
+  library(plotly)
+  library(gapminder)
+})
+df <- gapminder
+fig <- df %>%
+  plot_ly(
+    x = ~gdpPercap,
+    y = ~lifeExp,
+    size = ~pop,
+    color = ~continent,
+    frame = ~year,
+    text = ~country,
+    hoverinfo = "text",
+    type = 'scatter',
+    mode = 'markers'
+  ) %>% layout(
+    xaxis = list(
+      type = "log"
+    )
+  )
+fig
+```
+ 
+## Examples
+
+::: {.panel-tabset}
+
+### Directional chord diagrams
+
+```{r, out.width = "450px"}
+knitr::include_graphics("./images/abel-ani10-gf-fix.gif")
+```
+
+::: {style="font-size: 50%;"}
+Author： Guy Abel  
+Tools： `circlize`+`tweenr`+`magick`  
+link： [Animated directional chord diagrams](https://guyabel.com/post/animated-directional-chord-diagrams)
+:::
+
+
+
+
+
+### moveVis
+
+
+```{r, out.width = "450px"}
+knitr::include_graphics("./images/moveVis.gif")
+```
+
+::: {style="font-size: 50%;"}
+Author： Jakob Schwalb-Willmann  
+Tools： `ggplot2`+`gifski`  
+link： [moveVis: tools to visualize movement data](https://github.com/16eagle/moveVis)
+:::
+
+
+
+### rtsVis
+
+```{r, out.width = "1000px"}
+knitr::include_graphics("./images/NDVI_Northern_Europe_joined_pause.gif")
+```
+
+::: {style="font-size: 50%;"}
+Author： Johannes Mast  
+Tools： `ggplot2`+`gifski` (moveVis)    
+link： [A lightweight R package to visualize large raster time series](https://github.com/JohMast/rtsVis)
+:::
+
+
+### soccerAnimate
+
+
+```{r, out.width = "650px"}
+knitr::include_graphics("./images/convexhull.gif")
+```
+
+::: {style="font-size: 50%;"}
+Author： Ismael Gómez  
+Tools： `gganimate`+`gifski`   
+link： [An R package to create 2D animations of soccer tracking data](https://github.com/Dato-Futbol/soccerAnimate)
+:::
+
+
+
+
+:::
+
+
+## Examples
+
+::: {.panel-tabset}
+
+### Video format (mp4)
+
+<center>
+<video width="400" autoplay loop muted playsinline disablepictureinpicture onclick="this.paused ? this.play() : this.pause();">
+  <source src="./images/top_100_rpackages_12_fps_2023-01-30.mp4" />
+</video>
+</center>
+
+::: {style="font-size: 50%;"}
+Author： Rasmus Bååth  
+Tools： `gganimate` + `ffmpeg`  
+link： [Putting the top 100 R packages into a GIF](https://www.sumsar.net/blog/top-100-r-packages-gif/)
+:::
+
+### tidyexplain
+
+
+```{r, out.width = "400px"}
+knitr::include_graphics("./images/anti-join.gif")
+```
+
+::: {style="font-size: 50%;"}
+Author： Garrick Aden‑Buie  
+Tools： `gganimate`  
+link： [🤹 tidyexplain – Tidy Animated Verbs](https://www.garrickadenbuie.com/project/tidyexplain/)
+:::
+
+
+### ggpacman
+
+
+```{r, out.height = "400px"}
+knitr::include_graphics("./images/README-plot-time-all-animated-1.gif")
+```
+
+::: {style="font-size: 50%;"}
+Author： Mickaël Canouil    
+Tools： `gganimate`  
+link： [A ggplot2 and gganimate Version of Pac-Man](https://github.com/mcanouil/ggpacman)
+:::
+
+### Neuroimaging
+
+
+```{r, out.height = "400px"}
+knitr::include_graphics("./images/brain_animated.gif")
+```
+
+::: {style="font-size: 50%;"}
+Author： Athanasia Monika Mowinckel   
+Tools： `gganimate` + `ggseg`   
+link： [Get the brain animated!](https://drmowinckels.io/blog/2018-10-01-get-the-brain-animated/)
+:::
+
+::: {.notes}
+Chatter Charts – Visualizing Real-Time Fan Reactions
+https://hockey-graphs.com/2020/09/30/chatter-charts-visualizing-real-time-fan-reactions/
+:::
+
+:::
+
+# thank you! {background-color="#424242"}
+
+The brand colours are sooooo 🤮. 
+
