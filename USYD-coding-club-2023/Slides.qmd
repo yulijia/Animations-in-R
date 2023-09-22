@@ -2,7 +2,7 @@
 pagetitle: "Animations in R"
 author: "Lijia Yu"
 date: "2023/09/22"
-host: "USYD coding club"
+host: "coding club"
 institute: "University of Sydney"
 strip-comments: true
 format: 
@@ -66,7 +66,7 @@ opts_chunk$set(
 
 ::: {.column width="50%" style='display: flex; justify-content: center; align-items: center;'}
 
-`r fontawesome::fa('lightbulb',height='30px',fill='steelblue')` A good animated GIF of statistical figures can capture the audience's interest and leave a lasting impression.
+`r fontawesome::fa('lightbulb',height='30px',fill='steelblue')` A good animated statistical graphic can capture the audience's interest and leave a lasting impression.
 
 
 :::
@@ -538,9 +538,15 @@ saveGIF({
 
 
 ## gganimate
- 
+
+### Transitions
 
 ```{r gganimate, eval = F, echo=T}
+suppressPackageStartupMessages({
+  library(gganimate)
+  library(gapminder)
+  library(tidyverse)  
+})
 ggplot(gapminder, 
        aes(gdpPercap, lifeExp, size = pop, color = country)) +
   geom_point(alpha = 0.7, show.legend = FALSE) +
@@ -570,6 +576,95 @@ ggplot(gapminder, aes(gdpPercap, lifeExp, size = pop, color = country)) +
 ```
  
  
+ 
+## gganimate
+ 
+### Views
+
+```{r gganimate-view, eval = F, echo=T}
+suppressPackageStartupMessages({
+  library(gganimate)
+})
+ggplot(iris, aes(Sepal.Length, Sepal.Width)) +
+    geom_point() +
+    labs(title = "{closest_state}") +
+    transition_states(Species, transition_length = 4, state_length = 1) +
+    view_follow()
+```
+
+## gganimate 
+
+```{r gganimate-view-gif, eval = T}
+suppressPackageStartupMessages({
+  library(gganimate)
+})
+ggplot(iris, aes(Sepal.Length, Sepal.Width)) +
+    geom_point() +
+    labs(title = "{closest_state}") +
+    transition_states(Species, transition_length = 4, state_length = 1) +
+    view_follow()
+```
+
+ 
+## gganimate
+
+### Shadows
+
+```{r gganimate-shadows, eval = F, echo=T}
+suppressPackageStartupMessages({
+  library(gganimate)
+})
+ggplot(iris, aes(Petal.Length, Sepal.Length)) +
+  geom_point() +
+  labs(title = "{closest_state}") +
+  transition_states(Species, transition_length = 4, state_length = 1)+
+  shadow_wake(wake_length = 0.05)
+```
+
+## gganimate 
+
+```{r gganimate-shadows-gif, eval = T}
+suppressPackageStartupMessages({
+  library(gganimate)
+})
+ggplot(iris, aes(Petal.Length, Sepal.Length)) +
+  geom_point() +
+  labs(title = "{closest_state}") +
+  transition_states(Species, transition_length = 4, state_length = 1)+
+  shadow_wake(wake_length = 0.05)
+```
+
+## gganimate
+
+### Tweening
+
+```{r gganimate-Tweening, eval = F, echo=T}
+suppressPackageStartupMessages({
+  library(gganimate)
+})
+ggplot(mtcars, aes(mpg, disp)) + 
+  geom_point()+
+  transition_states(gear, transition_length = 2, state_length = 1)+
+  enter_fade() +
+  exit_fade()
+```
+
+## gganimate 
+
+```{r gganimate-Tweening-gif, eval = T}
+suppressPackageStartupMessages({
+  library(gganimate)
+})
+ggplot(mtcars, aes(mpg, disp)) + 
+  geom_point()+
+  transition_states(gear, transition_length = 2, state_length = 1)+
+  enter_fade() +
+  exit_fade()
+```
+
+
+
+
 ## Plotly
 
  
