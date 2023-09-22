@@ -126,7 +126,7 @@ anim = staticplot + transition_states(year, transition_length = 4, state_length 
   view_follow(fixed_x = TRUE) +
   labs(title = 'Population: {closest_state}',
        subtitle  =  "Top 10 countries",
-       caption  = "Population（milion） | Data source: Gapminder data")
+       caption  = "Population (milion) | Data source: Gapminder data")
 
 anim
 ```
