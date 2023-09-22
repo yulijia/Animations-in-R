@@ -66,7 +66,7 @@ opts_chunk$set(
 
 ::: {.column width="50%" style='display: flex; justify-content: center; align-items: center;'}
 
-`r fontawesome::fa('lightbulb',height='30px',fill='steelblue')` A good animated statistical graphic can capture the audience's interest and leave a lasting impression.
+`r fontawesome::fa('lightbulb',height='30px',fill='steelblue')` A well-crafted animated statistical graphic can capture the audience's interest and leave a lasting impression.
 
 
 :::
